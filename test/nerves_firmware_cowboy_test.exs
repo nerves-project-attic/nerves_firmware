@@ -1,7 +1,9 @@
 defmodule Nerves.Firmware.Adapters.Cowboy.Test do
 
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   import Helpers
+
+  @device Application.get_env(:nerves_firmware, :device)
 
   defmodule TestServer do
     @moduledoc "configure cowboy to handle firmware on port 8088"
@@ -26,29 +28,36 @@ defmodule Nerves.Firmware.Adapters.Cowboy.Test do
   {:ok, _} = HTTPotion.start
   {:ok, _} = TestServer.start
 
-  test "adapter is up and returns json response about the firmware" do
-    resp = HTTPotion.get TestServer.uri, headers: ["Accept": "application/json"]
-    headers = resp.headers.hdrs
-    assert resp.status_code == 200
-    assert {:ok, "Cowboy"} = Keyword.fetch(headers, :server)
-    assert {:ok, "application/json"} = Keyword.fetch(headers, :'content-type')
-    firmware_state = json_to_term(resp)
-    assert firmware_state[:status] == "active"
-  end
-
-  test "adapter accepts and installs a firmware update" do
+  test "returning status and installing firmware upgrade" do
     fw = firmware_file("test_1.fw")
+    # create the low level firmware file
+    assert :ok == Nerves.Firmware.Fwup.apply(fw, @device, :complete)    
+
+    # now, test the firmware
+    assert get_firmware_state[:status] == "active"
+    #now, try installing firmware upgrade
+   
     s = File.stat fw
+    # delay 1500ms to force different mtime for updated firmware
+    :timer.sleep 1500 
     assert 204 = send_firmware(fw)
     # REVIEW: SuperLame test
     s2 = File.stat(fw)
     assert s != s2
+    # now that we've update firmware, we should be in await_restart state
+    assert get_firmware_state[:status] == "await_restart"
     # this should fail with 403 since firmware is not yet rebooted
     assert 403 = send_firmware(fw)
     # and firmware should not be updated
     assert s != File.stat(fw)
   end
 
+  defp get_firmware_state do
+    resp = HTTPotion.get TestServer.uri, headers: ["Accept": "application/json"]
+    assert resp.status_code == 200
+    json_to_term(resp)
+  end
+  
   defp send_firmware(path) do
     resp = HTTPotion.put(TestServer.uri, [
            body: File.read!(path),
@@ -56,16 +65,9 @@ defmodule Nerves.Firmware.Adapters.Cowboy.Test do
     resp.status_code
   end
 
-  defp header(resp, key) do
-    unless is_atom(key) do
-      key = String.to_atom(key)
-    end
-    assert {:ok, result} = Keyword.fetch(resp.headers, key)
-    {:ok, result}
-  end
-
   defp json_to_term(resp) do
-    # {:ok, content_type} = header resp, "content-type"
+    content_type = Keyword.fetch(resp.headers.hdrs, :'content-type')
+    assert {:ok, "application/json"} == content_type
     {:ok, term} = JSX.decode(resp.body, [{:labels, :atom}])
     Enum.into term, []
   end
