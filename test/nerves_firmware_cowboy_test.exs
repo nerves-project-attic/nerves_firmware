@@ -4,7 +4,7 @@ defmodule Nerves.Firmware.Adapters.Cowboy.Test do
   import Helpers
 
   defmodule TestServer do
-    @moduledoc "configure and start a basic http server on port 8088 using cowboy"
+    @moduledoc "configure cowboy to handle firmware on port 8088"
 
     @test_http_port 8088
     @test_http_path "/fw_http_test"
@@ -32,6 +32,8 @@ defmodule Nerves.Firmware.Adapters.Cowboy.Test do
     assert resp.status_code == 200
     assert {:ok, "Cowboy"} = Keyword.fetch(headers, :server)
     assert {:ok, "application/json"} = Keyword.fetch(headers, :'content-type')
+    firmware_state = json_to_term(resp)
+    assert firmware_state[:status] == "active"
   end
 
   test "adapter accepts and installs a firmware update" do
@@ -62,7 +64,7 @@ defmodule Nerves.Firmware.Adapters.Cowboy.Test do
     {:ok, result}
   end
 
-  defp jterm(resp) do
+  defp json_to_term(resp) do
     # {:ok, content_type} = header resp, "content-type"
     {:ok, term} = JSX.decode(resp.body, [{:labels, :atom}])
     Enum.into term, []

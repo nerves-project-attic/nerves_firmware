@@ -53,7 +53,7 @@ defmodule Nerves.Firmware.Adapters.Cowboy do
   end
 
   def json_provider(req, state) do
-    term = [hello: "there"]  ## TODO: Firmware.metadata
+    term = Nerves.Firmware.state
     {:ok, body} = JSX.encode(term, [{:space, 1}, {:indent, 2}])
     { body <> "\n", req, state}
   end
