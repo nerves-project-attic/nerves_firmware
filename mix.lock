@@ -1,0 +1,10 @@
+%{"cowboy": {:hex, :cowboy, "1.0.4"},
+  "cowlib": {:hex, :cowlib, "1.0.2"},
+  "earmark": {:hex, :earmark, "0.2.1"},
+  "ex_doc": {:hex, :ex_doc, "0.11.5"},
+  "exjsx": {:hex, :exjsx, "3.2.0"},
+  "httpotion": {:git, "https://github.com/myfreeweb/httpotion.git", "98130b47957a595008fe415ac4d4d08cdc5f5ede", []},
+  "ibrowse": {:hex, :ibrowse, "4.2.2"},
+  "jsx": {:hex, :jsx, "2.6.2"},
+  "porcelain": {:hex, :porcelain, "2.0.1"},
+  "ranch": {:hex, :ranch, "1.2.1"}}
