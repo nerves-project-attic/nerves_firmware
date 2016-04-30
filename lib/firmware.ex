@@ -20,6 +20,7 @@ defmodule Nerves.Firmware do
   """
 
   use Application
+  require Logger
 
   @server Nerves.Firmware.Server
 
@@ -29,6 +30,7 @@ defmodule Nerves.Firmware do
   @spec start(atom, term) :: {:ok, pid} | {:error, String.t}
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
+    Logger.debug "#{__MODULE__}.start(...)"
     opts = [strategy: :one_for_one, name: Nerves.Firmware.Supervisor]
     children = [ worker(Nerves.Firmware.Server, []) ]
     Supervisor.start_link(children, opts)

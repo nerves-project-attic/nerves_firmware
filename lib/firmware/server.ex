@@ -3,6 +3,7 @@ defmodule Nerves.Firmware.Server do
 
   use GenServer
   alias Nerves.Firmware.Fwup
+  require Logger
 
   @device Application.get_env(:nerves_firmware, :device, "/dev/mmcblk0")
   @type reason :: term
@@ -18,6 +19,7 @@ defmodule Nerves.Firmware.Server do
 
   @spec init(term) :: {:ok, state} | {:error, reason}
   def init(_arg) do
+    Logger.debug "#{__MODULE__}.init"
     {:ok, %State{}}
   end
 
