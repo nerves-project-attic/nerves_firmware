@@ -9,7 +9,7 @@ defmodule Nerves.Firmware.Server do
   @type state :: Struct.t
 
   defmodule State do
-    defstruct state: :active
+    defstruct status: :active
   end
 
   def start_link() do
@@ -21,17 +21,26 @@ defmodule Nerves.Firmware.Server do
     {:ok, %State{}}
   end
 
+  def handle_call({:state}, _from, state) do
+    {:reply, public_state(state), state}
+  end
+
   def handle_call({:allow_upgrade?}, _from, state) do
-    {:reply, (state.state == :active), state}
+    {:reply, (state.status == :active), state}
   end
 
   def handle_call({:apply, firmware, action}, _from, state) do
     case Fwup.apply(firmware, @device, action) do
       :ok ->
-        {:reply, :ok, %{state | state: :await_restart}}
+        {:reply, :ok, %{state | status: :await_restart}}
       {:error, reason} ->
         {:reply, {:error, reason}, state}
     end
+  end
+
+  # return the public "state" of the firmware (not genserver state)
+  defp public_state(state) do
+    %{status: state.status, device: @device}
   end
 
 end

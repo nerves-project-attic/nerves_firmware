@@ -1,9 +1,13 @@
-# Nerves.Firmware
+# Nerves.Firmware (UNDER CONSTRUCTION)
 
 Manages firmware on a Nerves device, including upgrading, certificates, status.
 Depends, and delegates a lot, to Frank Hunleth's excellent
 [fwup](https://github.com/fhunleth/fwup), which is included of the standard
 Nerves configurations.
+
+## Discussion Area (during development)
+
+See the [Quip document](https://rosepoint.quip.com/Hm5NAbNPRoMC) for disucssion about various architectural issues and work list until stable.
 
 ## Installation
 
@@ -21,16 +25,8 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
           [applications: [:nerves_firmware]]
         end
 
-## TODO List
+## TODO List before release
 
-- [ ] device working
-
-- [ ] re-integrate status updates
+- [x] device working
+- [x] re-integrate status updates
 - [ ] understand :permanent app start supervision
-
-### Think List
-
-- ability to understand state of firmware (was via /sys/firmware)
-- ability to request update to firmware (via post to ...)
-- ability to "normalize" provisional firmware
-- ability to "rollback" updated firmware (before further update)
