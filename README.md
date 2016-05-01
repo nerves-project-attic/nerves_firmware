@@ -75,6 +75,6 @@ The device file that holds the firmware, e.g. /dev/mmcblk0
 ## Roadmap / TODO
 
 - [ ] understand :permanent app start supervision
-- [ ] build in auto-restart option
+- [x] build in auto-restart option
 - [ ] import cell security model
 - [ ] automatically integrate with service discovery mechanism

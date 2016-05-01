@@ -1,13 +1,13 @@
 defmodule Nerves.Firmware do
   @moduledoc """
-  An API and HTTP/REST microservice to manage firmware on a nerves device.
-
-  Starts a small, cowboy-based microservice that returns status about the
-  current firmware, and accepts updates to the firmware.
+  An API and HTTP/REST microservice to manage firmware on a Nerves device.
 
   The model that Nerves.Firmware takes is that it manages firmware for
   a single block device, which is set in elixir configuration at compile
   time.
+
+  Starts a small, cowboy-based microservice that returns status about the
+  current firmware, and accepts updates to the firmware.
 
   Depends, and delegates a lot, to Frank Hunleth's excellent
   [fwup](https://github.com/fhunleth/fwup), which is included of the standard
@@ -95,6 +95,19 @@ defmodule Nerves.Firmware do
   def state(), do: GenServer.call @server, {:state}
 
   @doc """
+  Applies a firmware file to the device media.
+
+  This mostly just passes information through to Nerves.Firmware.Fwup.apply(..)
+  which is a very thin wrapper around [fwup](https://github.com/fhunleth/fwup), but it
+  also sets the firwmare state based on the action to reflect the update, and
+  prevent multiple updates from overwriting known good firmware.
+  """
+  @spec apply(String.t, atom) :: :ok | {:error, term}
+  def apply(firmware, action) do
+    GenServer.call @server, {:apply, firmware, action}
+  end
+
+  @doc """
   Returns `true` if new firmware can currently be installed.
 
   The firmware module usually allows new firmware to be installed, but there
@@ -103,16 +116,19 @@ defmodule Nerves.Firmware do
   Currently, if the device has had an update applied without being restarted,
   we return false to prevent bricking.
   """
-  def allow_upgrade?(), do: GenServer.call @server, {:allow_upgrade?}
-
-  @spec apply(String.t, atom) :: :ok | {:error, term}
-  def apply(firmware, action) do
-    GenServer.call @server, {:apply, firmware, action}
+  @spec allow_upgrade?() :: true | false
+  def allow_upgrade?() do
+    GenServer.call @server, {:allow_upgrade?}
   end
 
+  @doc """
+  Forces reboot of the device.
+  """
+  @spec reboot() :: :ok
   def reboot() do
-    Logger.info "#{__MODULE__} Invoked Halt/Reboot"
-    :erlang.halt
+    Logger.info "#{__MODULE__} : rebooting device"
+    System.cmd("reboot", [])
+    :ok
   end
 
 end
