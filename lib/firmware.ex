@@ -70,15 +70,15 @@ defmodule Nerves.Firmware do
   @server Nerves.Firmware.Server
 
   @doc """
-  Application Start
+  Application start callback.
 
-  Starts the Firmware GenServer (Firmware.Server) and HTTP Server (Firmware.HTTP)
+  Note that for HTTP functionality, Nerves.Firmware.HTTP.start must
+  be invoked separately.
   """
   @spec start(atom, term) :: {:ok, pid} | {:error, String.t}
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
     Logger.debug "#{__MODULE__}.start(...)"
-    Nerves.Firmware.HTTP.start
     opts = [strategy: :one_for_one, name: Nerves.Firmware.Supervisor]
     children = [ worker(Nerves.Firmware.Server, []) ]
     Supervisor.start_link(children, opts)
