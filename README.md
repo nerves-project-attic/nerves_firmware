@@ -1,13 +1,17 @@
-# Nerves.Firmware (UNDER CONSTRUCTION)
+# Nerves.Firmware
 
-Manages firmware on a Nerves device, including upgrading, certificates, status.
+An API and HTTP/REST microservice to manage firmware on a nerves device.
+
+Starts a small, cowboy-based microservice that returns status about the
+current firmware, and accepts updates to the firmware.
+
+The model that Nerves.Firmware takes is that it manages firmware for
+a single block device, which is set in elixir configuration at compile
+time.
+
 Depends, and delegates a lot, to Frank Hunleth's excellent
 [fwup](https://github.com/fhunleth/fwup), which is included of the standard
 Nerves configurations.
-
-## Discussion Area (during development)
-
-See the [Quip document](https://rosepoint.quip.com/Hm5NAbNPRoMC) for disucssion about various architectural issues and work list until stable.
 
 ## Installation
 
@@ -25,8 +29,40 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
           [applications: [:nerves_firmware]]
         end
 
-## TODO List before release
+## Configuration
 
-- [x] device working
-- [x] re-integrate status updates
+In your app's config.exs, you can change a number of the default settings
+for Nerves.Firmware:
+
+| key          | default              | comments                            |
+|--------------|----------------------|-------------------------------------|
+| :device      | platform-dependent   | "/dev/mmcblk0" for ARM              |
+| :http_port   | 8988                 |                                     |
+| :http_path   | "/firmware"          |                                     |
+| :upload_path | "/tmp/uploaded.fw"   | Firmware will be uploaded here before install, and deleted afterward |
+
+## REST API
+
+See Nerves.Firmware.HTTP
+
+## Firmware State
+
+Both the Nerves.Firmware.state() function and the GET HTTP/REST API return
+the state of the firmware.  The keys/values
+
+__status:__
+
+`:active` - Currently running the latest firmware received.  Firmware
+must be in this state to be updated.
+
+`:await_restart` - Firmware has been updated since restart, and a restart is
+needed to start running from the new firmware.
+
+__device:__
+
+The device file that holds the firmware, e.g. /dev/mmcblk0
+
+## TODO
+
 - [ ] understand :permanent app start supervision
+- [ ] build in auto-restart option
