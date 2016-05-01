@@ -11,7 +11,7 @@ defmodule Nerves.Firmware.Mixfile do
   end
 
   def application do
-    [applications: [:logger], mod: {Nerves.Firmware, []}]
+    [applications: [:logger, :exjsx], mod: {Nerves.Firmware, []}]
   end
 
   defp deps(:test), do: deps(:dev) ++ [
