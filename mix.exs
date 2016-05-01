@@ -11,17 +11,17 @@ defmodule Nerves.Firmware.Mixfile do
   end
 
   def application do
-    [applications: [:logger, :exjsx], mod: {Nerves.Firmware, []}]
+    [applications: [:logger, :cowboy, :exjsx], mod: {Nerves.Firmware, []}]
   end
 
   defp deps(:test), do: deps(:dev) ++ [
     { :httpotion, github: "myfreeweb/httpotion"},
-    { :cowboy, "~> 1.0" }
   ]
 
   defp deps(_), do: [
+    { :cowboy, "~> 1.0" },
+    { :exjsx, "~> 3.2.0" },
     { :earmark, "~> 0.1", only: :dev },
-    { :ex_doc, "~> 0.7", only: :dev },
-    { :exjsx, "~> 3.2.0" }
+    { :ex_doc, "~> 0.7", only: :dev }
   ]
 end

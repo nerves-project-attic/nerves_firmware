@@ -6,6 +6,12 @@ defmodule Nerves.Firmware do
   a single block device, which is set in elixir configuration at compile
   time.
 
+  ## Configuration
+
+  :fw_tmp_path
+  :http_port
+  :http_path
+
   ## Firmware State
 
   status:  (one of the following)
@@ -25,12 +31,15 @@ defmodule Nerves.Firmware do
   @server Nerves.Firmware.Server
 
   @doc """
-  Application start callback (just starts Nerves.Firmware.Server)
+  Application Start
+
+  Starts the Firmware GenServer (Firmware.Server) and HTTP Server (Firmware.HTTP)
   """
   @spec start(atom, term) :: {:ok, pid} | {:error, String.t}
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
     Logger.debug "#{__MODULE__}.start(...)"
+    Nerves.Firmware.HTTP.start
     opts = [strategy: :one_for_one, name: Nerves.Firmware.Supervisor]
     children = [ worker(Nerves.Firmware.Server, []) ]
     Supervisor.start_link(children, opts)
