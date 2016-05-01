@@ -1,6 +1,6 @@
 defmodule Nerves.Firmware.HTTP do
   @moduledoc """
-  Implements a lightweight HTTP/REST interface to Firmware
+  Implements a lightweight HTTP/REST service for Firmware
 
   Defines an _acceptor_ that receives and installs firmware updates. Simply use
   use __HTTP PUT__ to send a firmware to the URI for the device, specifying
@@ -22,6 +22,7 @@ defmodule Nerves.Firmware.HTTP do
   @upload_path Application.get_env(:nerves_firmware, :upload_path, "/tmp/uploaded.fw")
 
   def start do
+    Logger.info "starting service #{__MODULE__} on #{@http_port}#{@http_path}"
     dispatch = :cowboy_router.compile [{:_,[{@http_path, __MODULE__, []}]}]
     :cowboy.start_http(__MODULE__, 10, [port: @http_port], [env: [dispatch: dispatch]])
   end

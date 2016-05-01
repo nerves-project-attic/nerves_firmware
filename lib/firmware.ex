@@ -81,7 +81,9 @@ defmodule Nerves.Firmware do
     Logger.debug "#{__MODULE__}.start(...)"
     opts = [strategy: :one_for_one, name: Nerves.Firmware.Supervisor]
     children = [ worker(Nerves.Firmware.Server, []) ]
-    Supervisor.start_link(children, opts)
+    supervisor = Supervisor.start_link(children, opts)
+    Nerves.Firmware.HTTP.start
+    supervisor
   end
 
   @doc """

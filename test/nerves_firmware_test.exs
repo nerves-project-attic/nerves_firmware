@@ -11,8 +11,6 @@ defmodule Nerves.Firmware.Test do
 
   {:ok, _} = HTTPotion.start
 
-  Nerves.Firmware.HTTP.start
-
   # TESTS
 
   test "Firmware app started succesfully" do
