@@ -110,4 +110,9 @@ defmodule Nerves.Firmware do
     GenServer.call @server, {:apply, firmware, action}
   end
 
+  def reboot() do
+    Logger.info "#{__MODULE__} Invoked Halt/Reboot"
+    :erlang.halt
+  end
+
 end

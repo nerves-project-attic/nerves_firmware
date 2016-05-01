@@ -5,8 +5,9 @@ defmodule Nerves.Firmware.Fwup do
   Someday, this may be useful as it's own module -- a porcelain for `fwup`,
   but it would need a lot of cleanup and a much better API for streaming and return values.
   """
-  @fwup_prog "fwup"
   require Logger
+
+  @fwup_prog "fwup"
 
   @doc """
   Apply the firmware in <input> to the given <device>, executing <task>.
@@ -19,11 +20,15 @@ defmodule Nerves.Firmware.Fwup do
   """
   @spec apply(String.t, String.t, String.t) :: :ok | {:error, term}
   def apply(input, device, task) do
-    Logger.debug "fwup: applying #{task} to #{device}"
+    Logger.info "Firmware: applying #{task} to #{device}"
     fwup_args = ["-a", "-q", "-U", "--no-eject", "-i", input, "-d", device, "-t", task]
     case System.cmd(@fwup_prog, fwup_args) do
-      {_stdout, 0} -> :ok
-      {_stdout, _} -> {:error, :fwup_error}  ## TODO reasonable errors
+      {_out, 0} ->
+        Logger.info "completed succesfully"
+        :ok
+      {error, _} ->
+        Logger.error "fwup: #{error}"
+        {:error, :fwup_error}
     end
   end
 end

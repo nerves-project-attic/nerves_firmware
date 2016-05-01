@@ -86,6 +86,10 @@ defmodule Nerves.Firmware.HTTP do
       {:ok, _fw_metadata} ->  # TODO: consider returning metadata
         {true, req, state}
       :ok ->
+        case :cowboy_req.header("x-reboot", req) do
+          {:undefined, _} ->  nil
+          {_, _} -> Nerves.Firmware.reboot
+        end
         {true, req, state}
     end
     File.rm @upload_path

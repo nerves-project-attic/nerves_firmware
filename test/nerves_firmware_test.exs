@@ -25,7 +25,6 @@ defmodule Nerves.Firmware.Test do
     assert {:ok, "application/json"} = Keyword.fetch(headers, :'content-type')
   end
 
-
   test "returning proper status before and after firmware upgrade" do
     fw = firmware_file("test_1.fw")
     # create the low level firmware file

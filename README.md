@@ -45,7 +45,17 @@ for Nerves.Firmware:
 
 See Nerves.Firmware.HTTP
 
-## Firmware State
+### Some `CURL`ing excercises
+
+Getting Firmware Info:
+
+  curl "http://my_ip:8988/firmware"
+
+Updating Firmware and Reboot:
+
+  curl -T my_firmware.fw "http://my_ip:8988/firmware" -H "Content-Type: application/x-firmware" -H "X-Reboot: true"
+
+### Firmware State
 
 Both the Nerves.Firmware.state() function and the GET HTTP/REST API return
 the state of the firmware.  The keys/values
@@ -62,7 +72,9 @@ __device:__
 
 The device file that holds the firmware, e.g. /dev/mmcblk0
 
-## TODO
+## Roadmap / TODO
 
 - [ ] understand :permanent app start supervision
 - [ ] build in auto-restart option
+- [ ] import cell security model
+- [ ] automatically integrate with service discovery mechanism
