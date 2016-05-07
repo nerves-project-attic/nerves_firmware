@@ -122,12 +122,41 @@ defmodule Nerves.Firmware do
   end
 
   @doc """
+  Apply a 1 or 2-phase nerves update
+
+  Applies firmware using `upgrade` task, then, if /tmp/finalize.fw exists,
+  apply that file with `on-reboot` task.  Supports @fhunleth 2-phase format.
+  """
+  @spec upgrade_and_finalize(String.t) :: :ok | {:error, term}
+  def upgrade_and_finalize(firmware) do
+    GenServer.call @server, {:upgrade_and_finalize, firmware}
+  end
+
+  @doc """
   Forces reboot of the device.
   """
   @spec reboot() :: :ok
-  def reboot() do
-    Logger.info "#{__MODULE__} : rebooting device"
-    System.cmd("reboot", [])
+  def reboot(), do: logged_shutdown "reboot"
+
+  @doc """
+  Forces device to power off (without reboot).
+  """
+  @spec poweroff() :: :ok
+  def poweroff(), do: logged_shutdown "poweroff"
+
+  @doc """
+  Forces device to halt (meaning hang, not power off, nor reboot).
+
+  Note: this is different than :erlang.halt(), which exists BEAM, and
+  may end up rebooting the device if erlinit.conf settings allow reboot on exit.
+  """
+  @spec halt() :: :ok
+  def halt(), do: logged_shutdown "halt"
+
+
+  defp logged_shutdown(cmd, args \\ []) do
+    Logger.info "#{__MODULE__} : device told to #{cmd}"
+    System.cmd(cmd, args)
     :ok
   end
 

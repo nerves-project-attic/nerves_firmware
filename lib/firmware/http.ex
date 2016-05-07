@@ -67,7 +67,7 @@ defmodule Nerves.Firmware.HTTP do
   def upload_acceptor(req, state) do
 		Logger.info "request to receive firmware"
     if Nerves.Firmware.allow_upgrade? do
-      upload_and_apply_firmware(req, state)
+      upload_and_apply_firmware_upgrade(req, state)
     else
       {:halt, reply_with(403, req), state}
 		end
@@ -76,15 +76,13 @@ defmodule Nerves.Firmware.HTTP do
   # TODO:  Ideally we'd like to allow streaming directly to fwup, but its hard
   # due to limitations with ports and writing to fifo's from elixir
   # Right solution would be to get Porcelain fixed to avoid golang for goon.
-  defp upload_and_apply_firmware(req, state) do
+  defp upload_and_apply_firmware_upgrade(req, state) do
 		Logger.info "receiving firmware"
 		File.open!(@upload_path, [:write], &(stream_fw &1, req))
     Logger.info "firmware received"
-    response = case Nerves.Firmware.apply(@upload_path, :upgrade) do
-      {:error, _whatever} ->
+    response = case Nerves.Firmware.upgrade_and_finalize(@upload_path) do
+      {:error, _reason} ->
         {:halt, reply_with(400, req), state}
-      {:ok, _fw_metadata} ->  # TODO: consider returning metadata
-        {true, req, state}
       :ok ->
         case :cowboy_req.header("x-reboot", req) do
           {:undefined, _} ->  nil

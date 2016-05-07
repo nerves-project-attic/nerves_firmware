@@ -2,6 +2,7 @@ defmodule Nerves.Firmware.Test do
   @moduledoc false
   use ExUnit.Case
   doctest Nerves.Firmware
+  require Logger
 
   @app_id :nerves_firmware
   @http_port Application.get_env(:nerves_firmware, :http_port, 8988)
@@ -32,22 +33,32 @@ defmodule Nerves.Firmware.Test do
     # now, test the firmware
     assert get_firmware_state[:status] == "active"
     #now, try installing firmware upgrade
-    s = File.stat fw
-    # delay 1500ms to force different mtime for updated firmware
-    :timer.sleep 1500
+    metrics1 = read_firmware_metrics(@device)
+    assert metrics1 == read_firmware_metrics(@device)
     assert 204 = send_firmware(fw)
-    # REVIEW: SuperLame test
-    s2 = File.stat(fw)
-    assert s != s2
+    metrics2 = read_firmware_metrics(@device)
+    assert metrics1 != metrics2
     # now that we've update firmware, we should be in await_restart state
     assert get_firmware_state[:status] == "await_restart"
     # this should fail with 403 since firmware is not yet rebooted
     assert 403 = send_firmware(fw)
+    metrics3 = read_firmware_metrics(@device)
     # and firmware should not be updated
-    assert s != File.stat(fw)
+    assert metrics2 == metrics3
+    assert metrics1 != metrics3
   end
 
   # HELPER FUNCTIONS
+
+  defp read_firmware_metrics(device) do
+    {read_mbr(device)}
+  end
+
+  defp read_mbr(device) do
+    File.open device, [:read], fn(file) ->
+      IO.binread(file, 512)
+    end
+  end
 
   defp firmware_file(filename) do
     Path.join "test/firmware_files", filename

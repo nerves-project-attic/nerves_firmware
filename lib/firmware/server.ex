@@ -6,6 +6,8 @@ defmodule Nerves.Firmware.Server do
   require Logger
 
   @device Application.get_env(:nerves_firmware, :device, "/dev/mmcblk0")
+  @finalize_fw Application.get_env(:nerves_firmware, :finalize_fw, "/tmp/finalize.fw")
+
   @type reason :: term
   @type state :: Struct.t
 
@@ -31,12 +33,54 @@ defmodule Nerves.Firmware.Server do
     {:reply, (state.status == :active), state}
   end
 
+
   def handle_call({:apply, firmware, action}, _from, state) do
     case Fwup.apply(firmware, @device, action) do
       :ok ->
         {:reply, :ok, %{state | status: :await_restart}}
       {:error, reason} ->
         {:reply, {:error, reason}, state}
+    end
+  end
+
+  def handle_call({:upgrade_and_finalize, firmware}, _from, state) do
+    case do_upgrade_and_finalize(firmware) do
+      :ok ->
+        {:reply, :ok, %{state | status: :await_restart}}
+      {:error, reason} ->
+        {:reply, {:error, reason}, state}
+    end
+  end
+
+  @spec do_upgrade_and_finalize(String.t) :: :ok | {:error, reason}
+  defp do_upgrade_and_finalize(firmware) do
+    File.rm(@finalize_fw)
+    case Fwup.apply(firmware, @device, "upgrade") do
+      {:error, reason} ->
+        Logger.error "#{__MODULE__} upgrade failed: #{inspect reason}"
+        {:error, reason}
+      :ok ->
+        Logger.info "upgrade succeded"
+        if File.exists?(@finalize_fw) do
+          Logger.info "Found #{@finalize_fw}, applying finalize/on-reboot"
+          try_finalize(@finalize_fw)
+        else
+          :ok
+        end
+    end
+  end
+
+  # called after upgrade to see if we have a finalize.fw for a 2-phase
+  # firmware update.  If so, apply it by running the on-reboot task.
+  @spec try_finalize(String.t) :: :ok | {:error, :reason}
+  defp try_finalize(ffw) do
+    case Fwup.apply(ffw, @device, "on-reboot") do
+      :ok ->
+        Logger.info "finalize/on-reboot succeded, ready for restart"
+        :ok
+      {:error, reason} ->
+        Logger.info "finalize/on-reboot failed: #{inspect reason}"
+        {:error, reason}
     end
   end
 
