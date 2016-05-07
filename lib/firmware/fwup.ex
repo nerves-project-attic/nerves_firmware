@@ -21,7 +21,7 @@ defmodule Nerves.Firmware.Fwup do
   @spec apply(String.t, String.t, String.t) :: :ok | {:error, term}
   def apply(input, device, task) do
     Logger.info "Firmware: applying #{task} to #{device}"
-    fwup_args = ["-aqu", "--no-eject", "-i", input, "-d", device, "-t", task]
+    fwup_args = ["-aqU", "--no-eject", "-i", input, "-d", device, "-t", task]
     case System.cmd(@fwup_prog, fwup_args) do
       {_out, 0} ->
         :ok
