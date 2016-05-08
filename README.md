@@ -3,24 +3,19 @@
 An API and HTTP/REST microservice to manage firmware on a nerves device.
 
 Starts a small, cowboy-based microservice that returns status about the
-current firmware, and accepts updates to the firmware.
+current firmware, and accepts updates to the firmware via a REST-style interface.   Nerves.Firmware manages firmware for a single block device, which is configured at compile time.
 
-The model that Nerves.Firmware takes is that it manages firmware for
-a single block device, which is set in elixir configuration at compile
-time.
-
-Depends, and delegates a lot, to Frank Hunleth's excellent
-[fwup](https://github.com/fhunleth/fwup), which is included of the standard
+Leans heavily on Frank Hunleth's excellent [fwup](https://github.com/fhunleth/fwup), which is included of the standard
 Nerves configurations.
 
-## Installation
+## Installation/Usage
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+Until we publish in hex or move officially to nerves_project:
 
   1. Add nerves_firmware to your list of dependencies in `mix.exs`:
 
         def deps do
-          [{:nerves_firmware, "~> 0.0.1"}]
+          [{:nerves_firmware, github: "ghitchens/nerves_firmware"}]
         end
 
   2. Ensure nerves_firmware is started before your application:
@@ -28,6 +23,8 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
         def application do
           [applications: [:nerves_firmware]]
         end
+
+That's all.  Your firmware is now queriable and updatable!
 
 ## Configuration
 
@@ -49,31 +46,16 @@ See Nerves.Firmware.HTTP
 
 Getting Firmware Info:
 
-  curl "http://my_ip:8988/firmware"
+    curl "http://my_ip:8988/firmware"
 
 Updating Firmware and Reboot:
 
-  curl -T my_firmware.fw "http://my_ip:8988/firmware" -H "Content-Type: application/x-firmware" -H "X-Reboot: true"
+    curl -T my_firmware.fw "http://my_ip:8988/firmware" -H "Content-Type: application/x-firmware" -H "X-Reboot: true"
 
-### Firmware State
+## TODO
 
-Both the Nerves.Firmware.state() function and the GET HTTP/REST API return
-the state of the firmware.  The keys/values
-
-__status:__
-
-`:active` - Currently running the latest firmware received.  Firmware
-must be in this state to be updated.
-
-`:await_restart` - Firmware has been updated since restart, and a restart is
-needed to start running from the new firmware.
-
-__device:__
-
-The device file that holds the firmware, e.g. /dev/mmcblk0
-
-## Roadmap / TODO
-
+- [ ] finish documenting API
+- [x] finish two phase updates (upgrade/finalize)
 - [ ] understand :permanent app start supervision
 - [x] build in auto-restart option
 - [ ] import cell security model
