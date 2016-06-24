@@ -1,13 +1,12 @@
 defmodule Nerves.Firmware.Fwup do
-  @moduledoc """
-  Trivial wrapper around Frank Hunleth's FWUP package.
+  # Trivial wrapper around Frank Hunleth's FWUP package. Someday, this may be
+  # useful as it's own module -- a porcelain for `fwup`, but it would need a lot
+  # of cleanup and a much better API for streaming and return values.
 
-  Someday, this may be useful as it's own module -- a porcelain for `fwup`,
-  but it would need a lot of cleanup and a much better API for streaming and return values.
-  """
-  require Logger
-
+  @moduledoc false
   @fwup_prog "fwup"
+
+  require Logger
 
   @doc """
   Apply the firmware in <input> to the given <device>, executing <task>.

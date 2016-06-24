@@ -1,27 +1,44 @@
 defmodule Nerves.Firmware.Mixfile do
   use Mix.Project
 
+  @version "0.2.0"
+
   def project do
-    [app: :nerves_firmware,
-     version: "0.0.1",
-     elixir: "~> 1.2",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps(Mix.env)]
+    [
+      app: :nerves_firmware,
+      version: @version,
+      elixir: "~> 1.2",
+      build_embedded: Mix.env == :prod,
+      start_permanent: Mix.env == :prod,
+      deps: deps(Mix.env),
+      description: "Manage and update firmware on a Nerves device",
+      package: package(),
+      name: "Nerves.Firmware",
+      docs: docs
+   ]
   end
 
   def application do
-    [applications: [:logger, :cowboy, :exjsx], mod: {Nerves.Firmware, []}]
+    [ applications: [:logger], mod: {Nerves.Firmware, []} ]
   end
 
-  defp deps(:test), do: deps(:dev) ++ [
-    { :httpotion, github: "myfreeweb/httpotion"},
-  ]
+  defp deps(_) do
+    [{:ex_doc, "~> 0.11", only: :dev}]
+  end
 
-  defp deps(_), do: [
-    { :cowboy, "~> 1.0" },
-    { :exjsx, "~> 3.2.0" },
-    { :earmark, "~> 0.1", only: :dev },
-    { :ex_doc, "~> 0.7", only: :dev }
-  ]
+  defp docs do
+    [
+      source_ref: "v#{@version}",
+      main: "Nerves.Firmware",
+      source_url: "https://github.com/nerves-project/nerves_firmware",
+      extras: [ "README.md", "CHANGELOG.md"]
+    ]
+  end
+
+  defp package do
+    [ maintainers: ["Garth Hitchens"],
+      licenses: ["Apache-2.0"],
+      links: %{github: "https://github.com/nerves-project/nerves_firmware"},
+      files: ~w(lib config) ++ ~w(README.md CHANGELOG.md LICENSE mix.exs) ]
+  end
 end

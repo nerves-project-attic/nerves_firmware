@@ -12,6 +12,7 @@ defmodule Nerves.Firmware.Server do
   @type state :: Struct.t
 
   defmodule State do
+    @moduledoc false
     defstruct status: :active
   end
 
@@ -30,26 +31,40 @@ defmodule Nerves.Firmware.Server do
   end
 
   def handle_call({:allow_upgrade?}, _from, state) do
-    {:reply, (state.status == :active), state}
+    {:reply, allow_upgrade?(state), state}
   end
 
-
   def handle_call({:apply, firmware, action}, _from, state) do
-    case Fwup.apply(firmware, @device, action) do
-      :ok ->
-        {:reply, :ok, %{state | status: :await_restart}}
-      {:error, reason} ->
-        {:reply, {:error, reason}, state}
+    try_apply_if_allowed state, fn() ->
+      apply(firmware, @device, action)
     end
   end
 
   def handle_call({:upgrade_and_finalize, firmware}, _from, state) do
-    case do_upgrade_and_finalize(firmware) do
+    try_apply_if_allowed state, fn() ->
+      do_upgrade_and_finalize(firmware)
+    end
+  end
+
+  defp try_apply_if_allowed(state, afn) do
+    if allow_upgrade?(state) do
+      try_apply(state, afn)
+    else
+      {:reply, {:error, :await_restart}, state}
+    end
+  end
+
+  defp try_apply(state, afn) do
+    case afn.() do
       :ok ->
         {:reply, :ok, %{state | status: :await_restart}}
       {:error, reason} ->
         {:reply, {:error, reason}, state}
     end
+  end
+
+  defp allow_upgrade?(state) do
+    state.status == :active
   end
 
   @spec do_upgrade_and_finalize(String.t) :: :ok | {:error, reason}

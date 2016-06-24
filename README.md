@@ -25,38 +25,10 @@ Until we publish in hex or move officially to nerves_project:
         end
 
 That's all.  Your firmware is now queriable and updatable!
+See the Nerves.Firmware module for API documentation.
 
 ## Configuration
 
-In your app's config.exs, you can change a number of the default settings
-for Nerves.Firmware:
+You can configure the device that Nerves.Firmware manages in your config.exs:
 
-| key          | default              | comments                            |
-|--------------|----------------------|-------------------------------------|
-| :device      | platform-dependent   | "/dev/mmcblk0" for ARM              |
-| :http_port   | 8988                 |                                     |
-| :http_path   | "/firmware"          |                                     |
-| :upload_path | "/tmp/uploaded.fw"   | Firmware will be uploaded here before install, and deleted afterward |
-
-## REST API
-
-See Nerves.Firmware.HTTP
-
-### Some `CURL`ing excercises
-
-Getting Firmware Info:
-
-    curl "http://my_ip:8988/firmware"
-
-Updating Firmware and Reboot:
-
-    curl -T my_firmware.fw "http://my_ip:8988/firmware" -H "Content-Type: application/x-firmware" -H "X-Reboot: true"
-
-## TODO
-
-- [ ] finish documenting API
-- [x] finish two phase updates (upgrade/finalize)
-- [ ] understand :permanent app start supervision
-- [x] build in auto-restart option
-- [ ] import cell security model
-- [ ] automatically integrate with service discovery mechanism
+      config :nerves_firmware, device: "/dev/mmcblk0"
