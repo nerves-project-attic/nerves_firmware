@@ -1,13 +1,18 @@
 defmodule Nerves.Firmware do
   @moduledoc """
-  Provides APIs for performing a firwmare upgrades and discovering firmware state.
+  Elixir API for upgrading and managing firmware on a Nerves device.
 
   Handles firmware for a single block device (like /dev/mmcblk0). Delegates a
   lot to Frank Hunleth's excellent [fwup](https://github.com/fhunleth/fwup).
 
-  If you are looking for over-the-network firmware updates, see
-  `nerves_firmware_http`, which provides an HTTP micro-service that streams
-  for over-the-network firmware updates.
+  Provides:
+  - Firmware upgrades
+  - Firmware status
+  - Firmware-related activities (shutdown, reboot, halt)
+
+  **Looking for over-the-network firmware updates? see
+  [nerves_firmware_http](https://github.com/nerves-project/nerves_firmware_http),
+  which provides an HTTP micro-service providing over-network firmware management.
 
   ## Installation
 
@@ -25,14 +30,10 @@ defmodule Nerves.Firmware do
 
   ## Configuration
 
-  In your app's config.exs, you can configure the block device that is managed
-  by setting the :device key as follows:
+  In your app's config.exs, you can configure the block device for your
+  target that is managed by setting the device key as follows:
 
-      config :nerves_firmware, device: "dev/mmcblk0"
-
-  This is a target-specific setting.  Reasonable defaults are provided for most targets.
-  See config/config.exs to see them.
-
+        config :nerves_firmware, device: "dev/mmcblk0"
   """
 
   use Application
