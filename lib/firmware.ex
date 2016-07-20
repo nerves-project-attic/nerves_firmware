@@ -116,7 +116,7 @@ defmodule Nerves.Firmware do
   """
   @spec upgrade_and_finalize(String.t) :: :ok | {:error, reason}
   def upgrade_and_finalize(firmware) do
-    GenServer.call @server, {:upgrade_and_finalize, firmware}
+    GenServer.call @server, {:upgrade_and_finalize, firmware}, :infinity
   end
 
   @doc """
