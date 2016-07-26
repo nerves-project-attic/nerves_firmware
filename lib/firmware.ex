@@ -116,7 +116,7 @@ defmodule Nerves.Firmware do
   """
   @spec upgrade_and_finalize(String.t) :: :ok | {:error, reason}
   def upgrade_and_finalize(firmware) do
-    GenServer.call @server, {:upgrade_and_finalize, firmware}
+    GenServer.call @server, {:upgrade_and_finalize, firmware}, :infinity
   end
 
   @doc """
@@ -127,6 +127,16 @@ defmodule Nerves.Firmware do
   """
   @spec reboot() :: :ok
   def reboot(), do: logged_shutdown "reboot"
+
+  @doc """
+  Reboot the device gracefully
+
+  Issues :init.stop command to gracefully shutdown all applications in the Erlang VM.
+  All code is unloaded and ports closed before the system terminates by calling halt(Status).
+  erlinit.config must be set to reboot on exit(default) for a graceful reboot to work.
+  """
+  @spec reboot(atom) :: :ok
+  def reboot(:graceful), do: :init.stop
 
   @doc """
   Forces device to power off (without reboot).
