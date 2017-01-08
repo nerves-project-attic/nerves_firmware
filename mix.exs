@@ -14,7 +14,7 @@ defmodule Nerves.Firmware.Mixfile do
       description: "Manage and update firmware on a Nerves device",
       package: package(),
       name: "Nerves.Firmware",
-      docs: docs
+      docs: docs()
    ]
   end
 
