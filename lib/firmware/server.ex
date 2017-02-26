@@ -5,15 +5,12 @@ defmodule Nerves.Firmware.Server do
   alias Nerves.Firmware.Fwup
   require Logger
 
-  @device Application.get_env(:nerves_firmware, :device, "/dev/mmcblk0")
-  @finalize_fw Application.get_env(:nerves_firmware, :finalize_fw, "/tmp/finalize.fw")
-
   @type reason :: term
   @type state :: Struct.t
 
   defmodule State do
     @moduledoc false
-    defstruct status: :active
+    defstruct status: :active, device: nil
   end
 
   def start_link() do
@@ -23,7 +20,8 @@ defmodule Nerves.Firmware.Server do
   @spec init(term) :: {:ok, state} | {:error, reason}
   def init(_arg) do
     Logger.debug "#{__MODULE__}.init"
-    {:ok, %State{}}
+    device = Application.get_env(:nerves_firmware, :device, "/dev/mmcblk0")
+    {:ok, %State{status: :active, device: device}}
   end
 
   def handle_call({:state}, _from, state) do
@@ -36,13 +34,13 @@ defmodule Nerves.Firmware.Server do
 
   def handle_call({:apply, firmware, action}, _from, state) do
     try_apply_if_allowed state, fn() ->
-      apply(firmware, @device, action)
+      apply(firmware, state.device, action)
     end
   end
 
   def handle_call({:upgrade_and_finalize, firmware}, _from, state) do
     try_apply_if_allowed state, fn() ->
-      do_upgrade_and_finalize(firmware)
+      do_upgrade_and_finalize(firmware, state)
     end
   end
 
@@ -67,18 +65,19 @@ defmodule Nerves.Firmware.Server do
     state.status == :active
   end
 
-  @spec do_upgrade_and_finalize(String.t) :: :ok | {:error, reason}
-  defp do_upgrade_and_finalize(firmware) do
-    File.rm(@finalize_fw)
-    case Fwup.apply(firmware, @device, "upgrade") do
+  @spec do_upgrade_and_finalize(String.t, Struct.t) :: :ok | {:error, reason}
+  defp do_upgrade_and_finalize(firmware, state) do
+    finalize_fw = Application.get_env(:nerves_firmware, :finalize_fw, "/tmp/finalize.fw")
+    File.rm(finalize_fw)
+    case Fwup.apply(firmware, state.device, "upgrade") do
       {:error, reason} ->
         Logger.error "#{__MODULE__} upgrade failed: #{inspect reason}"
         {:error, reason}
       :ok ->
         Logger.info "upgrade succeded"
-        if File.exists?(@finalize_fw) do
-          Logger.info "Found #{@finalize_fw}, applying finalize/on-reboot"
-          try_finalize(@finalize_fw)
+        if File.exists?(finalize_fw) do
+          Logger.info "Found #{finalize_fw}, applying finalize/on-reboot"
+          try_finalize(finalize_fw, state)
         else
           :ok
         end
@@ -87,9 +86,9 @@ defmodule Nerves.Firmware.Server do
 
   # called after upgrade to see if we have a finalize.fw for a 2-phase
   # firmware update.  If so, apply it by running the on-reboot task.
-  @spec try_finalize(String.t) :: :ok | {:error, :reason}
-  defp try_finalize(ffw) do
-    case Fwup.apply(ffw, @device, "on-reboot") do
+  @spec try_finalize(String.t, state) :: :ok | {:error, :reason}
+  defp try_finalize(ffw, state) do
+    case Fwup.apply(ffw, state.device, "on-reboot") do
       :ok ->
         Logger.info "finalize/on-reboot succeded, ready for restart"
         :ok
@@ -101,7 +100,7 @@ defmodule Nerves.Firmware.Server do
 
   # return the public "state" of the firmware (not genserver state)
   defp public_state(state) do
-    %{status: state.status, device: @device}
+    %{status: state.status, device: state.device}
   end
 
 end

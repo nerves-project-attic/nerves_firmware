@@ -1,21 +1,20 @@
 defmodule Nerves.Firmware.Mixfile do
   use Mix.Project
 
-  @version "0.2.0"
+  @version "0.3.0"
 
   def project do
     [
       app: :nerves_firmware,
       version: @version,
-      elixir: "~> 1.2",
+      elixir: "~> 1.4",
       build_embedded: Mix.env == :prod,
       start_permanent: Mix.env == :prod,
       deps: deps(Mix.env),
       description: "Manage and update firmware on a Nerves device",
       package: package(),
       name: "Nerves.Firmware",
-      docs: docs()
-   ]
+      docs: docs()  ]
   end
 
   def application do
@@ -23,7 +22,7 @@ defmodule Nerves.Firmware.Mixfile do
   end
 
   defp deps(_) do
-    [{:ex_doc, "~> 0.11", only: :dev}]
+    [{:ex_doc, "~> 0.15", only: :dev}]
   end
 
   defp docs do
