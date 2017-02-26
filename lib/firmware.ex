@@ -1,6 +1,6 @@
 defmodule Nerves.Firmware do
   @moduledoc """
-  Elixir API for upgrading and managing firmware on a Nerves device.
+  API for upgrading and managing firmware on a Nerves device.
 
   Handles firmware for a single block device (like /dev/mmcblk0). Delegates a
   lot to Frank Hunleth's excellent [fwup](https://github.com/fhunleth/fwup).
@@ -10,7 +10,7 @@ defmodule Nerves.Firmware do
   - Firmware status
   - Firmware-related activities (shutdown, reboot, halt)
 
-  **Looking for over-the-network firmware updates? see
+  **Looking for over-the-network firmware updates?** see
   [nerves_firmware_http](https://github.com/nerves-project/nerves_firmware_http),
   which provides an HTTP micro-service providing over-network firmware management.
 
@@ -19,7 +19,7 @@ defmodule Nerves.Firmware do
     1. Add nerves_firmware to your list of dependencies in `mix.exs`:
 
           def deps do
-            [{:nerves_firmware, "~> 0.2.0"}]
+            [{:nerves_firmware, "~> 0.3.0"}]
           end
 
     2. Ensure nerves_firmware is started before your application:

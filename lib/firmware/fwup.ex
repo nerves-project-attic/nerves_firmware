@@ -25,7 +25,7 @@ defmodule Nerves.Firmware.Fwup do
       {_out, 0} ->
         :ok
       {error, _} ->
-        Logger.error "fwup: #{error}"
+        Logger.error error
         {:error, :fwup_error}
     end
   end
