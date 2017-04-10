@@ -90,8 +90,15 @@ defmodule Nerves.Firmware do
   Returns {:error, :await_restart} if the upgrade is requested after
   already updating an image without a reboot in-between.
   """
-  @spec apply(String.t, atom, args \\ []) :: :ok | {:error, reason}
-  def apply(firmware, action, args) do
+  @spec apply(String.t, atom, []) :: :ok | {:error, reason}
+  def apply(firmware, action, args \\ []) do
+    pub_key_path = Application.get_env(:nerves_firmware, :pub_key_path)
+    args = if pub_key_path do
+      IO.puts "using signature!"
+      ["-p", "#{pub_key_path}" | args]
+    else
+      args
+    end
     GenServer.call @server, {:apply, firmware, action, args}
   end
 
@@ -121,6 +128,13 @@ defmodule Nerves.Firmware do
   """
   @spec upgrade_and_finalize(String.t, [binary]) :: :ok | {:error, reason}
   def upgrade_and_finalize(firmware, args \\ []) do
+    pub_key_path = Application.get_env(:nerves_firmware, :pub_key_path)
+    args = if pub_key_path do
+      IO.puts "using signature!"
+      ["-p", "#{pub_key_path}" | args]
+    else
+      args
+    end
     GenServer.call @server, {:upgrade_and_finalize, firmware, args}, :infinity
   end
 

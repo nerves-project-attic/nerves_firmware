@@ -34,7 +34,7 @@ defmodule Nerves.Firmware.Server do
 
   def handle_call({:apply, firmware, action, args}, _from, state) do
     try_apply_if_allowed state, fn() ->
-      apply(firmware, state.device, action, args)
+      Fwup.apply(firmware, state.device, action, args)
     end
   end
 

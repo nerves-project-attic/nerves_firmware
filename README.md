@@ -9,7 +9,7 @@ Leans heavily on Frank Hunleth's excellent [fwup](https://github.com/fhunleth/fw
 
 For more, read the [documentation](https://hexdocs.pm/nerves_firmware).
 
-## Installation/Usage
+## Installation
 
 It's published in [Hex](https://hex.pm/nerves_firmware), so..
 
@@ -24,3 +24,14 @@ It's published in [Hex](https://hex.pm/nerves_firmware), so..
           def application do
             [applications: [:nerves_firmware]]
           end
+
+## Usage
+in `config.exs` you can configure the block device and signing of the firmware.
+
+``` elixir
+use Mix.Config
+
+config :nerves_firmware,
+  device: "/dev/mmcblk0",
+  pub_key_path: "/etc/fwup-key.pub"
+```
