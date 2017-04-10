@@ -84,12 +84,15 @@ defmodule Nerves.Firmware do
   also sets the firwmare state based on the action to reflect the update, and
   prevent multiple updates from overwriting known good firmware.
 
+  * `action` can be one of `:upgrade` or `:complete`
+  * `args` is a list of extra arguments to be passed to fwup.
+
   Returns {:error, :await_restart} if the upgrade is requested after
   already updating an image without a reboot in-between.
   """
-  @spec apply(String.t, atom) :: :ok | {:error, reason}
-  def apply(firmware, action) do
-    GenServer.call @server, {:apply, firmware, action}
+  @spec apply(String.t, atom, args \\ []) :: :ok | {:error, reason}
+  def apply(firmware, action, args) do
+    GenServer.call @server, {:apply, firmware, action, args}
   end
 
   @doc """
@@ -111,12 +114,14 @@ defmodule Nerves.Firmware do
   Applies firmware using `upgrade` task, then, if /tmp/finalize.fw exists,
   apply that file with `on-reboot` task.  Supports @fhunleth 2-phase format.
 
+  * `args` is a list of extra arguments to be passed to fwup.
+
   Returns {:error, :await_restart} if the upgrade is requested after
   already updating an image without a reboot in-between.
   """
-  @spec upgrade_and_finalize(String.t) :: :ok | {:error, reason}
-  def upgrade_and_finalize(firmware) do
-    GenServer.call @server, {:upgrade_and_finalize, firmware}, :infinity
+  @spec upgrade_and_finalize(String.t, [binary]) :: :ok | {:error, reason}
+  def upgrade_and_finalize(firmware, args \\ []) do
+    GenServer.call @server, {:upgrade_and_finalize, firmware, args}, :infinity
   end
 
   @doc """
