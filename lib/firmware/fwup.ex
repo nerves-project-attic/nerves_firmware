@@ -11,16 +11,19 @@ defmodule Nerves.Firmware.Fwup do
   @doc """
   Apply the firmware in <input> to the given <device>, executing <task>.
 
+  `args` is a list of arguments to be passed to fwup.
+
   Not implemented using ports, because ports cant send EOF, so it's not possible
   to stream firmware through a port.  Porcelain doesn't work because `goon` isn't
   easy to compile for the target in Nerves.
 
   The simple file-based I/O allows using named pipes to solve the streaming issues.
   """
-  @spec apply(String.t, String.t, String.t) :: :ok | {:error, term}
-  def apply(input, device, task) do
+  @spec apply(String.t, String.t, String.t, [binary]) :: :ok | {:error, term}
+  def apply(input, device, task, args \\ []) do
     Logger.info "Firmware: applying #{task} to #{device}"
-    fwup_args = ["-aqU", "--no-eject", "-i", input, "-d", device, "-t", task]
+    fwup_args =
+      ["-aqU", "--no-eject", "-i", input, "-d", device, "-t", task] ++ args
     case System.cmd(@fwup_prog, fwup_args) do
       {_out, 0} ->
         :ok

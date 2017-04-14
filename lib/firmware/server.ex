@@ -32,15 +32,15 @@ defmodule Nerves.Firmware.Server do
     {:reply, allow_upgrade?(state), state}
   end
 
-  def handle_call({:apply, firmware, action}, _from, state) do
+  def handle_call({:apply, firmware, action, args}, _from, state) do
     try_apply_if_allowed state, fn() ->
-      apply(firmware, state.device, action)
+      Fwup.apply(firmware, state.device, action, args)
     end
   end
 
-  def handle_call({:upgrade_and_finalize, firmware}, _from, state) do
+  def handle_call({:upgrade_and_finalize, firmware, args}, _from, state) do
     try_apply_if_allowed state, fn() ->
-      do_upgrade_and_finalize(firmware, state)
+      do_upgrade_and_finalize(firmware, args, state)
     end
   end
 
@@ -65,11 +65,11 @@ defmodule Nerves.Firmware.Server do
     state.status == :active
   end
 
-  @spec do_upgrade_and_finalize(String.t, Struct.t) :: :ok | {:error, reason}
-  defp do_upgrade_and_finalize(firmware, state) do
+  @spec do_upgrade_and_finalize(String.t, [binary], Struct.t) :: :ok | {:error, reason}
+  defp do_upgrade_and_finalize(firmware, args, state) do
     finalize_fw = Application.get_env(:nerves_firmware, :finalize_fw, "/tmp/finalize.fw")
     File.rm(finalize_fw)
-    case Fwup.apply(firmware, state.device, "upgrade") do
+    case Fwup.apply(firmware, state.device, "upgrade", args) do
       {:error, reason} ->
         Logger.error "#{__MODULE__} upgrade failed: #{inspect reason}"
         {:error, reason}
@@ -88,7 +88,7 @@ defmodule Nerves.Firmware.Server do
   # firmware update.  If so, apply it by running the on-reboot task.
   @spec try_finalize(String.t, state) :: :ok | {:error, :reason}
   defp try_finalize(ffw, state) do
-    case Fwup.apply(ffw, state.device, "on-reboot") do
+    case Fwup.apply(ffw, state.device, "on-reboot", []) do
       :ok ->
         Logger.info "finalize/on-reboot succeded, ready for restart"
         :ok
