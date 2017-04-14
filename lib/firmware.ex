@@ -41,6 +41,11 @@ defmodule Nerves.Firmware do
 
   @type reason :: atom
 
+  @typedoc """
+  Arguments to be passed to FWUP.
+  """
+  @type args :: [binary]
+
   @server Nerves.Firmware.Server
 
   @doc """
@@ -90,15 +95,9 @@ defmodule Nerves.Firmware do
   Returns {:error, :await_restart} if the upgrade is requested after
   already updating an image without a reboot in-between.
   """
-  @spec apply(String.t, atom, []) :: :ok | {:error, reason}
+  @spec apply(String.t, atom, args) :: :ok | {:error, reason}
   def apply(firmware, action, args \\ []) do
-    pub_key_path = Application.get_env(:nerves_firmware, :pub_key_path)
-    args = if pub_key_path do
-      IO.puts "using signature!"
-      ["-p", "#{pub_key_path}" | args]
-    else
-      args
-    end
+    args = maybe_pub_key_args(args)
     GenServer.call @server, {:apply, firmware, action, args}
   end
 
@@ -126,15 +125,9 @@ defmodule Nerves.Firmware do
   Returns {:error, :await_restart} if the upgrade is requested after
   already updating an image without a reboot in-between.
   """
-  @spec upgrade_and_finalize(String.t, [binary]) :: :ok | {:error, reason}
+  @spec upgrade_and_finalize(String.t, args) :: :ok | {:error, reason}
   def upgrade_and_finalize(firmware, args \\ []) do
-    pub_key_path = Application.get_env(:nerves_firmware, :pub_key_path)
-    args = if pub_key_path do
-      IO.puts "using signature!"
-      ["-p", "#{pub_key_path}" | args]
-    else
-      args
-    end
+    args = maybe_pub_key_args(args)
     GenServer.call @server, {:upgrade_and_finalize, firmware, args}, :infinity
   end
 
@@ -178,5 +171,16 @@ defmodule Nerves.Firmware do
     Logger.info "#{__MODULE__} : device told to #{cmd}"
     System.cmd(cmd, args)
     :ok
+  end
+
+  @spec maybe_pub_key_args(args) :: args
+  defp maybe_pub_key_args(args) do
+    pub_key_path = Application.get_env(:nerves_firmware, :pub_key_path)
+    if pub_key_path do
+      Logger.info "#{__MODULE__} using signature"
+      ["-p", "#{pub_key_path}" | args]
+    else
+      args
+    end
   end
 end
