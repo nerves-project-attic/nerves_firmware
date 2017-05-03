@@ -54,7 +54,8 @@ defmodule Nerves.Firmware.Fwup do
     {:noreply, s}
   end
 
-  def handle_info({_port, {:data, <<"WN", code :: integer-16, message :: binary>>}}, s) do
+  def handle_info({_port, {:data, <<warning :: binary-2, code :: integer-16, message :: binary>>}}, s)
+    when warning in ["WA", "WN"] do
     Logger.debug "FWUP Warning #{code}: #{message}"
     {:noreply, s}
   end
