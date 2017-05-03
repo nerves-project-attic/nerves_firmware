@@ -23,7 +23,7 @@ defmodule Nerves.Firmware.Fwup do
     fwup = System.find_executable("fwup")
     callback = opts[:callback]
     port = Port.open({:spawn_executable, fwup},
-      [{:args, ["-F", "-d", device, "-a", "-t", task]},
+      [{:args, ["-aFU", "-d", device, "-t", task]},
         {:packet, 4},
         :use_stdio,
         :binary,
