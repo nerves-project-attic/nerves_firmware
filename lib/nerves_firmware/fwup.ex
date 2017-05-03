@@ -49,14 +49,16 @@ defmodule Nerves.Firmware.Fwup do
   end
 
   def handle_call({:stream_chunk, chunk, opts}, from, s) do
-    send s.port, {self(), {:command, chunk}}
+    Port.command(s.port, chunk)
+    Logger.debug "Chunk Sent"
+    #send s.port, {self(), {:command, chunk}}
     case opts[:await] do
       true -> {:noreply, %{s | callback: from}}
       false -> {:reply, :ok, s}
     end
   end
 
-  def handle_info({_port, {:data, <<"OK", code :: integer-16>>}}, s) do
+  def handle_info({_port, {:data, <<"OK", _code :: integer-16>>}}, s) do
     Logger.debug "FWUP Done"
     GenServer.reply(s.callback, :ok)
     {:noreply, s}
@@ -83,7 +85,7 @@ defmodule Nerves.Firmware.Fwup do
     {:noreply, s}
   end
 
-  def handle_info(msg, s) do
+  def handle_info(_msg, s) do
     {:noreply, s}
   end
 
