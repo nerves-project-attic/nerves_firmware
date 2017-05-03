@@ -2,6 +2,17 @@ defmodule Nerves.Firmware.Fwup do
   use GenServer
   require Logger
 
+  @moduledoc """
+  A Port interface to stream firmware to fwup
+
+  Example usage
+    file = File.read!(/path/to/my.fw)
+    {:ok, pid} = Nerves.Firmware.Fwup.start_link([device: "/tmp/test.img", task: "complete"])
+    Nerves.Firmware.Fwup.stream_chunk(pid, file, await: true)
+    Nerves.Firmware.Fwup.stop
+
+  """
+
   @timeout 120_000
 
   def start_link(opts \\ []) do
