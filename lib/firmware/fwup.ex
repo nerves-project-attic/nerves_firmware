@@ -2,6 +2,8 @@ defmodule Nerves.Firmware.Fwup do
   use GenServer
   require Logger
 
+  @timeout 120_000
+
   def start_link(opts \\ []) do
     opts = Keyword.put_new(opts, :callback, self())
     GenServer.start_link(__MODULE__, opts)
@@ -13,7 +15,7 @@ defmodule Nerves.Firmware.Fwup do
 
   def stream_chunk(pid, chunk, opts \\ [await: false]) do
     Logger.debug "Sending Chunk: #{inspect chunk}"
-    GenServer.call(pid, {:stream_chunk, chunk, opts})
+    GenServer.call(pid, {:stream_chunk, chunk, opts}, @timeout)
   end
 
   def init(opts) do
