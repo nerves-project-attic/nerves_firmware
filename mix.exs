@@ -35,9 +35,8 @@ defmodule Nerves.Firmware.Mixfile do
   end
 
   defp package do
-    [ maintainers: ["Garth Hitchens"],
+    [ maintainers: ["Justin Schneck", "Garth Hitchens"],
       licenses: ["Apache-2.0"],
-      links: %{github: "https://github.com/nerves-project/nerves_firmware"},
-      files: ~w(lib config) ++ ~w(README.md CHANGELOG.md LICENSE mix.exs) ]
+      links: %{github: "https://github.com/nerves-project/nerves_firmware"}]
   end
 end
