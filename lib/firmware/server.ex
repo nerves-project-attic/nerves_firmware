@@ -44,6 +44,12 @@ defmodule Nerves.Firmware.Server do
     end
   end
 
+  def handle_call({:finalize, args}, _from, state) do
+    try_apply_if_allowed state, fn() ->
+      do_finalize(args, state)
+    end
+  end
+
   defp try_apply_if_allowed(state, afn) do
     if allow_upgrade?(state) do
       try_apply(state, afn)
@@ -75,12 +81,17 @@ defmodule Nerves.Firmware.Server do
         {:error, reason}
       :ok ->
         Logger.info "upgrade succeded"
-        if File.exists?(finalize_fw) do
-          Logger.info "Found #{finalize_fw}, applying finalize/on-reboot"
-          try_finalize(finalize_fw, state)
-        else
-          :ok
-        end
+        do_finalize(args, state)
+    end
+  end
+
+  def do_finalize(args, state) do
+    finalize_fw = Application.get_env(:nerves_firmware, :finalize_fw, "/tmp/finalize.fw")
+    if File.exists?(finalize_fw) do
+      Logger.info "Found #{finalize_fw}, applying finalize/on-reboot"
+      try_finalize(finalize_fw, state)
+    else
+      :ok
     end
   end
 
