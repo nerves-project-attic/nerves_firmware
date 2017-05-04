@@ -132,11 +132,10 @@ defmodule Nerves.Firmware do
   end
 
   @doc """
-  Apply a 1 or 2-phase nerves update
-
   Applies /tmp/finalize.fw if with `on-reboot` task if exists,
 
-  * `args` is a list of extra arguments to be passed to fwup.
+  * `args` is a list of extra arguments to be passed to fwup, but is currently
+  ignored for this function.
 
   Returns {:error, :await_restart} if the finalize is requested after
   already updating an image without a reboot in-between.
@@ -144,6 +143,7 @@ defmodule Nerves.Firmware do
   @spec finalize(args) :: :ok | {:error, reason}
   def finalize(args \\ []) do
     args = maybe_pub_key_args(args)
+    # REVIEW args is ignored by the server for this call. What should they do?
     GenServer.call @server, {:finalize, args}, :infinity
   end
 

@@ -85,7 +85,7 @@ defmodule Nerves.Firmware.Server do
     end
   end
 
-  def do_finalize(args, state) do
+  def do_finalize(_args, state) do
     finalize_fw = Application.get_env(:nerves_firmware, :finalize_fw, "/tmp/finalize.fw")
     if File.exists?(finalize_fw) do
       Logger.info "Found #{finalize_fw}, applying finalize/on-reboot"
