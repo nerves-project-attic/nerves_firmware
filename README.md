@@ -16,7 +16,7 @@ It's published in [Hex](https://hex.pm/nerves_firmware), so..
   1. Add nerves_firmware to your list of dependencies in `mix.exs`:
 
           def deps do
-            [{:nerves_firmware, "~> 0.3.0"}]
+            [{:nerves_firmware, "~> 0.4.0"}]
           end
 
   2. Ensure nerves_firmware is started before your application:

@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.0 (2017-05-04)
+
+- Support chunked streaming direct to fwup (thanks @mobileoverlord and @fhunleth)
+- Support fwup's signing process for firmware (thanks @connorrigby)
+- Add finalize/1 (mostly to support `nerves_firmware_http` streaming state)
+
 ## v0.3.0 (2017-02-22)
 
 - Converted compile-time config to runtime

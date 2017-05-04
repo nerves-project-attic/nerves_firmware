@@ -1,7 +1,7 @@
 defmodule Nerves.Firmware.Mixfile do
   use Mix.Project
 
-  @version "0.3.0"
+  @version "0.4.0"
 
   def project do
     [
@@ -35,7 +35,7 @@ defmodule Nerves.Firmware.Mixfile do
   end
 
   defp package do
-    [ maintainers: ["Justin Schneck", "Garth Hitchens"],
+    [ maintainers: ["Garth Hitchens", "Justin Schneck"],
       licenses: ["Apache-2.0"],
       links: %{github: "https://github.com/nerves-project/nerves_firmware"}]
   end
