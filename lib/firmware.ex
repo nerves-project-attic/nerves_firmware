@@ -185,8 +185,22 @@ defmodule Nerves.Firmware do
 
   defp logged_shutdown(cmd, args \\ []) do
     Logger.info "#{__MODULE__} : device told to #{cmd}"
+
+    # Invoke the appropriate command to tell erlinit that a shutdown
+    # of the Erlang VM is imminent. erlinit 1.0+ gives some time
+    # before the shutdown (10 seconds by default). Pre-erlinit 1.0
+    # shuts down close to immediately.
     System.cmd(cmd, args)
-    :ok
+
+    # Gracefully shut down
+    :init.stop
+
+    # If still shutting down and erlinit hasn't already killed
+    # the Erlang VM, do so ourselves. This is set to a minute
+    # since `:init.stop` and `erlinit` are expected to kill
+    # the VM first.
+    Process.sleep(60_000)
+    System.halt
   end
 
   @spec maybe_pub_key_args(args) :: args
