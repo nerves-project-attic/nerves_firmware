@@ -80,7 +80,7 @@ defmodule Nerves.Firmware.Server do
         Logger.error "#{__MODULE__} upgrade failed: #{inspect reason}"
         {:error, reason}
       :ok ->
-        Logger.info "upgrade succeded"
+        Logger.info "upgrade succeeded"
         do_finalize(args, state)
     end
   end
@@ -101,7 +101,7 @@ defmodule Nerves.Firmware.Server do
   defp try_finalize(ffw, state) do
     case Fwup.apply(ffw, state.device, "on-reboot", []) do
       :ok ->
-        Logger.info "finalize/on-reboot succeded, ready for restart"
+        Logger.info "finalize/on-reboot succeeded, ready for restart"
         :ok
       {:error, reason} ->
         Logger.info "finalize/on-reboot failed: #{inspect reason}"
