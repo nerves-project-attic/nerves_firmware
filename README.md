@@ -11,7 +11,7 @@ For more, read the [documentation](https://hexdocs.pm/nerves_firmware).
 
 ## Installation
 
-It's published in [Hex](https://hex.pm/nerves_firmware), so..
+It's published in [Hex](https://hex.pm/packages/nerves_firmware), so..
 
   1. Add nerves_firmware to your list of dependencies in `mix.exs`:
 
