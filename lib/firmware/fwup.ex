@@ -90,7 +90,7 @@ defmodule Nerves.Firmware.Fwup do
   end
 
   @doc """
-  Apply the firmware in <input> to the given <device>, executing <task>.
+  Apply the firmware in `input` to the given `device`, executing `task`.
 
   `args` is a list of arguments to be passed to fwup.
 
