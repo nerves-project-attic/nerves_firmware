@@ -6,10 +6,11 @@ defmodule Nerves.Firmware.Fwup do
   A Port interface to stream firmware to fwup
 
   Example usage
-    file = File.read!(/path/to/my.fw)
-    {:ok, pid} = Nerves.Firmware.Fwup.start_link([device: "/tmp/test.img", task: "complete"])
-    Nerves.Firmware.Fwup.stream_chunk(pid, file, await: true)
-    Nerves.Firmware.Fwup.stop
+
+      file = File.read!(/path/to/my.fw)
+      {:ok, pid} = Nerves.Firmware.Fwup.start_link([device: "/tmp/test.img", task: "complete"])
+      Nerves.Firmware.Fwup.stream_chunk(pid, file, await: true)
+      Nerves.Firmware.Fwup.stop
 
   """
 
@@ -90,7 +91,7 @@ defmodule Nerves.Firmware.Fwup do
   end
 
   @doc """
-  Apply the firmware in <input> to the given <device>, executing <task>.
+  Apply the firmware in `input` to the given `device`, executing `task`.
 
   `args` is a list of arguments to be passed to fwup.
 
