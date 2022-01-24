@@ -13,17 +13,18 @@ defmodule Nerves.Firmware.Server do
     defstruct status: :active, device: nil
   end
 
-  def start_link() do
+  def start_link(_opts) do
     GenServer.start __MODULE__, :ok, name: __MODULE__
   end
 
-  @spec init(term) :: {:ok, state} | {:error, reason}
+  @impl true
   def init(_arg) do
     Logger.debug "#{__MODULE__}.init"
     device = Application.get_env(:nerves_firmware, :device, "/dev/mmcblk0")
     {:ok, %State{status: :active, device: device}}
   end
 
+  @impl true
   def handle_call({:state}, _from, state) do
     {:reply, public_state(state), state}
   end
