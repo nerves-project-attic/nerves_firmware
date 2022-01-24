@@ -22,7 +22,7 @@ defmodule Nerves.Firmware.Mixfile do
   end
 
   defp deps(_) do
-    [{:ex_doc, "~> 0.15", only: :dev}]
+    [{:ex_doc, ">= 0.0.0", only: :dev}]
   end
 
   defp docs do
