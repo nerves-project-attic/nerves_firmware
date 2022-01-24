@@ -5,13 +5,27 @@ defmodule Nerves.Firmware.Fwup do
   @moduledoc """
   A Port interface to stream firmware to fwup
 
-  Example usage
+  Caller process will receive the following messages:
+  * `{:fwup, :ok}`: firmware upgrade succesfully
+  * `{:fwup, {:progress, integer()}}`: firmware upgrade progress (percentage)
+  * `{:fwup, {:error, {integer(), binary()}}}`: firmware upgrade reports error
+  * `{:fwup, {:error, binary()}}`: firmware upgrade reports unexpected data
+  * `{:fwup, {:warn, {integer(), binary()}}}`: firmware upgrade reports warning
 
-      file = File.read!(/path/to/my.fw)
-      {:ok, pid} = Nerves.Firmware.Fwup.start_link([device: "/tmp/test.img", task: "complete"])
-      Nerves.Firmware.Fwup.stream_chunk(pid, file, await: true)
-      Nerves.Firmware.Fwup.stop
+  ## Example
 
+    ```
+    file = File.read!(/path/to/my.fw)
+    {:ok, pid} = Nerves.Firmware.Fwup.start_link([device: "/tmp/test.img", task: "complete"])
+
+    "/path/to/my.fw"
+    |> File.stream!([], 4096)
+    |> Enum.each(fn data ->
+      Nerves.Firmware.Fwup.stream_chunk(pid, data)
+    end)
+
+    Nerves.Firmware.Fwup.stop(pid)
+    ```
   """
 
   @timeout 120_000
@@ -25,9 +39,9 @@ defmodule Nerves.Firmware.Fwup do
     GenServer.stop(pid)
   end
 
-  def stream_chunk(pid, chunk, opts \\ [await: false]) do
+  def stream_chunk(pid, chunk) do
     Logger.debug "Sending Chunk: #{inspect chunk}"
-    GenServer.call(pid, {:stream_chunk, chunk, opts}, @timeout)
+    GenServer.call(pid, {:stream_chunk, chunk}, @timeout)
   end
 
   def init(opts) do
@@ -49,40 +63,34 @@ defmodule Nerves.Firmware.Fwup do
     }}
   end
 
-  def handle_call({:stream_chunk, chunk, opts}, from, s) do
+  def handle_call({:stream_chunk, chunk}, _from, s) do
     Port.command(s.port, chunk)
-    Logger.debug "Chunk Sent"
-    #send s.port, {self(), {:command, chunk}}
-    case opts[:await] do
-      true -> {:noreply, %{s | callback: from}}
-      false -> {:reply, :ok, s}
-    end
+    {:reply, :ok, s}
   end
 
   def handle_info({_port, {:data, <<"OK", _code :: integer-16>>}}, s) do
-    Logger.debug "FWUP Done"
-    GenServer.reply(s.callback, :ok)
+    send(s.callback, {:fwup, :ok})
     {:noreply, s}
   end
 
   def handle_info({_port, {:data, <<"ER", code :: integer-16, message :: binary>>}}, s) do
-    Logger.debug "FWUP Error #{code}: #{message}"
+    send(s.callback, {:fwup, {:error, {code, message}}})
     {:noreply, s}
   end
 
   def handle_info({_port, {:data, <<warning :: binary-2, code :: integer-16, message :: binary>>}}, s)
     when warning in ["WA", "WN"] do
-    Logger.debug "FWUP Warning #{code}: #{message}"
+    send(s.callback, {:fwup, {:warn, {code, message}}})
     {:noreply, s}
   end
 
   def handle_info({_port, {:data, <<"PR", progress :: integer-16>>}}, s) do
-    Logger.debug "FWUP Progress: #{progress}%"
+    send(s.callback, {:fwup, {:progress, progress}})
     {:noreply, s}
   end
 
   def handle_info({_port, {:data, resp}}, s) do
-    Logger.debug "FWUP unknown response: #{inspect resp}"
+    send(s.callback, {:error, resp})
     {:noreply, s}
   end
 
